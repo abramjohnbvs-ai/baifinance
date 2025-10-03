@@ -26,7 +26,7 @@ client.on(Events.MessageCreate, async (message) => {
     });
 
     const username = message.member?.nickname || message.author.username;
-    await message.reply(`✅ ${username} has logged in!`);
+    await message.reply(`✅ ${username}'s time has been recorded`);
   }
 });
 
