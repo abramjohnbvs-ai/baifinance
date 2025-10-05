@@ -2,6 +2,26 @@ require("dotenv").config();
 const { Client, GatewayIntentBits, Events } = require("discord.js");
 const axios = require("axios");
 
+//random port just to satisfy render
+
+const http = require("http");
+
+const PORT = process.env.PORT || 3000; // Render provides process.env.PORT
+const server = http.createServer((req, res) => {
+  if (req.url === "/health") {
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    return res.end("OK");
+  }
+  res.writeHead(200, { "Content-Type": "text/plain" });
+  res.end("Bot is running");
+});
+
+server.listen(PORT, () => {
+  console.log(`HTTP server listening on port ${PORT}`);
+});
+
+//code ends here
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
