@@ -2,8 +2,7 @@ require("dotenv").config();
 const { Client, GatewayIntentBits, Events } = require("discord.js");
 const axios = require("axios");
 
-//random port just to satisfy render
-
+// random port just to satisfy Render
 const http = require("http");
 
 const PORT = process.env.PORT || 3000; // Render provides process.env.PORT
@@ -20,8 +19,7 @@ server.listen(PORT, () => {
   console.log(`HTTP server listening on port ${PORT}`);
 });
 
-//code ends here
-
+// Discord bot
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -34,7 +32,12 @@ client.once(Events.ClientReady, (c) => {
   console.log(`🤖 Logged in as ${c.user.tag}`);
 });
 
+// Debugging: log every message the bot sees
 client.on(Events.MessageCreate, async (message) => {
+  console.log(
+    `[${message.guild?.name || "DM"}] ${message.author.tag}: ${message.content}`
+  );
+
   if (message.author.bot) return;
 
   const keywords = ["time in", "time out"];
