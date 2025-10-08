@@ -43,12 +43,12 @@ client.on(Events.MessageCreate, async (message) => {
   const keywords = ["time in", "time out"];
   if (keywords.some((k) => message.content.toLowerCase().includes(k))) {
     await axios.post(process.env.MAKE_WEBHOOK_URL, {
-      user: message.author.username,
+      user: message.author.displayName,
       user_id: message.author.id,
       content: message.content,
     });
 
-    const username = message.member?.nickname || message.author.username;
+    const username = message.member?.nickname || message.author.displayName;
     await message.reply(`✅ ${username}'s time has been recorded`);
   }
 });
