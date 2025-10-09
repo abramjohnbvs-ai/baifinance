@@ -40,7 +40,7 @@ client.on(Events.MessageCreate, async (message) => {
 
   if (message.author.bot) return;
 
-  const keywords = ["time in", "time out"];
+  const keywords = ["time in", "time out", "brb", "back"];
   if (keywords.some((k) => message.content.toLowerCase().includes(k))) {
     await axios.post(process.env.MAKE_WEBHOOK_URL, {
       user: message.member?.displayName || message.author.username,
