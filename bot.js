@@ -1,11 +1,9 @@
 require("dotenv").config();
 const { Client, GatewayIntentBits, Events } = require("discord.js");
 const axios = require("axios");
-
-// random port just to satisfy Render
 const http = require("http");
 
-const PORT = process.env.PORT || 3000; // Render provides process.env.PORT
+const PORT = process.env.PORT || 3000;
 const server = http.createServer((req, res) => {
   if (req.url === "/health") {
     res.writeHead(200, { "Content-Type": "text/plain" });
@@ -14,12 +12,11 @@ const server = http.createServer((req, res) => {
   res.writeHead(200, { "Content-Type": "text/plain" });
   res.end("Bot is running");
 });
-
 server.listen(PORT, () => {
   console.log(`HTTP server listening on port ${PORT}`);
 });
 
-// Discord bot
+// Discord bot setup
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -32,24 +29,50 @@ client.once(Events.ClientReady, (c) => {
   console.log(`🤖 Logged in as ${c.user.tag}`);
 });
 
-// Debugging: log every message the bot sees
-client.on(Events.MessageCreate, async (message) => {
-  console.log(
-    `[${message.guild?.name || "DM"}] ${message.author.tag}: ${message.content}`
-  );
+// Track user time state in memory
+const userStatus = {}; // e.g., { '1234567890': 'in' }
 
+client.on(Events.MessageCreate, async (message) => {
   if (message.author.bot) return;
 
+  const content = message.content.toLowerCase();
+  const username = message.member?.displayName || message.author.username;
+
+  // Supported keywords
   const keywords = ["time in", "time out", "brb", "back", "lunch"];
-  if (keywords.some((k) => message.content.toLowerCase().includes(k))) {
+  const matched = keywords.find((k) => content.includes(k));
+  if (!matched) return;
+
+  // Validation logic
+  const userId = message.author.id;
+  const currentStatus = userStatus[userId] || "out";
+
+  if (matched.includes("time in")) {
+    if (currentStatus === "in") {
+      return message.reply(`⚠️ ${username} is already timed in.`);
+    }
+    userStatus[userId] = "in";
+  }
+
+  if (matched.includes("time out")) {
+    if (currentStatus === "out") {
+      return message.reply(`⚠️ ${username} is already timed out.`);
+    }
+    userStatus[userId] = "out";
+  }
+
+  // Continue with webhook request
+  try {
     await axios.post(process.env.MAKE_WEBHOOK_URL, {
-      user: message.member?.displayName || message.author.username,
-      user_id: message.author.id,
+      user: username,
+      user_id: userId,
       content: message.content,
     });
 
-    const username = message.member?.displayName || message.author.username;
-    await message.reply(`✅ ${username}'s time has been recorded`);
+    await message.reply(`✅ ${username}'s ${matched} has been recorded.`);
+  } catch (error) {
+    console.error("❌ Failed to send to Make:", error.message);
+    await message.reply("⚠️ Something went wrong sending your record.");
   }
 });
 
