@@ -54,7 +54,28 @@ client.on(Events.MessageCreate, async (message) => {
     userStatus[userId] = "in";
   }
 
+  if (matched.includes("back")) {
+    if (currentStatus === "in") {
+      return message.reply(`⚠️ ${username} is already timed in.`);
+    }
+    userStatus[userId] = "in";
+  }
+
   if (matched.includes("time out")) {
+    if (currentStatus === "out") {
+      return message.reply(`⚠️ ${username} is already timed out.`);
+    }
+    userStatus[userId] = "out";
+  }
+
+  if (matched.includes("brb")) {
+    if (currentStatus === "out") {
+      return message.reply(`⚠️ ${username} is already timed out.`);
+    }
+    userStatus[userId] = "out";
+  }
+
+  if (matched.includes("lunch")) {
     if (currentStatus === "out") {
       return message.reply(`⚠️ ${username} is already timed out.`);
     }
