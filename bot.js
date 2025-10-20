@@ -40,7 +40,7 @@ const ALLOWED_CHANNELS = [
 client.on(Events.MessageCreate, async (message) => {
   if (message.author.bot) return;
 
-  if (message.channel.id !== ALLOWED_CHANNELS) return;
+  if (!ALLOWED_CHANNELS.includes(message.channel.id)) return;
 
   const content = message.content.toLowerCase();
   const username = message.member?.displayName || message.author.username;
