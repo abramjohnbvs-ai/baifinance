@@ -32,8 +32,9 @@ client.once(Events.ClientReady, (c) => {
 // Track user time state in memory
 const userStatus = {};
 const ALLOWED_CHANNELS = [
-  "123456789012345678", // #attendance
-  "987654321098765432", // #general
+  "1429655909428363284", // #attendance
+  "914875154541195276", // #general practice
+  "1429638437832757272", // #general testing
 ];
 
 client.on(Events.MessageCreate, async (message) => {
