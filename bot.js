@@ -30,10 +30,16 @@ client.once(Events.ClientReady, (c) => {
 });
 
 // Track user time state in memory
-const userStatus = {}; // e.g., { '1234567890': 'in' }
+const userStatus = {};
+const ALLOWED_CHANNELS = [
+  "123456789012345678", // #attendance
+  "987654321098765432", // #general
+];
 
 client.on(Events.MessageCreate, async (message) => {
   if (message.author.bot) return;
+
+  if (message.channel.id !== ALLOWED_CHANNEL_ID) return;
 
   const content = message.content.toLowerCase();
   const username = message.member?.displayName || message.author.username;
@@ -48,16 +54,10 @@ client.on(Events.MessageCreate, async (message) => {
   const currentStatus = userStatus[userId] || "out";
 
   if (matched.includes("time in")) {
-    if (currentStatus === "in") {
-      return message.reply(`⚠️ ${username} is already timed in.`);
-    }
     userStatus[userId] = "in";
   }
 
   if (matched.includes("back")) {
-    if (currentStatus === "in") {
-      return message.reply(`⚠️ ${username} is already timed in.`);
-    }
     userStatus[userId] = "in";
   }
 
