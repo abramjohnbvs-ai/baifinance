@@ -37,61 +37,59 @@ const ALLOWED_CHANNELS = [
   "1429638437832757272", // #general testing
 ];
 
+// Keyword mapping (single source of truth)
+const ACTIONS = {
+  TIME_IN: ["time in", "back", "in"],
+  TIME_OUT: ["time out", "brb", "lunch", "out"],
+};
+
 client.on(Events.MessageCreate, async (message) => {
   if (message.author.bot) return;
-
   if (!ALLOWED_CHANNELS.includes(message.channel.id)) return;
 
   const content = message.content.toLowerCase();
   const username = message.member?.displayName || message.author.username;
-
-  // Supported keywords
-  const keywords = ["time in", "time out", "brb", "back", "lunch"];
-  const matched = keywords.find((k) => content.includes(k));
-  if (!matched) return;
-
-  // Validation logic
   const userId = message.author.id;
+
+  // Detect action
+  let action = null;
+
+  for (const phrase of ACTIONS.TIME_IN) {
+    if (content === phrase || content.startsWith(`${phrase} `)) {
+      action = "Time In";
+      break;
+    }
+  }
+
+  if (!action) {
+    for (const phrase of ACTIONS.TIME_OUT) {
+      if (content === phrase || content.startsWith(`${phrase} `)) {
+        action = "Time Out";
+        break;
+      }
+    }
+  }
+
+  if (!action) return;
+
+  // Validation & state update
   const currentStatus = userStatus[userId] || "out";
 
-  if (matched.includes("time in")) {
-    userStatus[userId] = "in";
+  if (action === "Time Out" && currentStatus === "out") {
+    return message.reply(`⚠️ ${username} is already timed out.`);
   }
 
-  if (matched.includes("back")) {
-    userStatus[userId] = "in";
-  }
+  userStatus[userId] = action === "Time In" ? "in" : "out";
 
-  if (matched.includes("time out")) {
-    if (currentStatus === "out") {
-      return message.reply(`⚠️ ${username} is already timed out.`);
-    }
-    userStatus[userId] = "out";
-  }
-
-  if (matched.includes("brb")) {
-    if (currentStatus === "out") {
-      return message.reply(`⚠️ ${username} is already timed out.`);
-    }
-    userStatus[userId] = "out";
-  }
-
-  if (matched.includes("lunch")) {
-    if (currentStatus === "out") {
-      return message.reply(`⚠️ ${username} is already timed out.`);
-    }
-    userStatus[userId] = "out";
-  }
-
-  // Continue with webhook request
+  // Webhook request
   try {
     await axios.post(process.env.MAKE_WEBHOOK_URL, {
       user: username,
       user_id: userId,
-      content: message.content,
+      content: action, // ✅ standardized value
     });
 
-    await message.reply(`✅ ${username}'s ${matched} has been recorded.`);
+    await message.reply(`✅ ${username}'s ${action} has been recorded.`);
   } catch (error) {
     console.error("❌ Failed to send to Make:", error.message);
     await message.reply("⚠️ Something went wrong sending your record.");
